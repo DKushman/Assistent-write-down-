@@ -1,8 +1,7 @@
 name: Deploy to GitHub Pages
 
+# Primary hosting is Vercel. This workflow only builds the static shell (no API key).
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -35,7 +34,6 @@ jobs:
         run: npm run build
         env:
           VITE_BASE_PATH: /Assistent-write-down-/
-          VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
