@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-frontend:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,30 +27,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build frontend
+      - name: Build
         run: npm run build
         env:
           VITE_BASE_PATH: /Assistent-write-down-/
-          VITE_API_URL: ${{ vars.VITE_API_URL }}
-
-  build-worker:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: worker/package-lock.json
-
-      - name: Install worker dependencies
-        run: npm ci
-        working-directory: worker
-
-      - name: Typecheck worker
-        run: npx tsc --noEmit
-        working-directory: worker
+          VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
