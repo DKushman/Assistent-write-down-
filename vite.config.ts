@@ -2,7 +2,7 @@ import { defineConfig, loadEnv, type Plugin } from 'vite'
 import path from 'path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import { analyzeAudioWithGemini } from './lib/gemini-server'
+import { analyzeAudioWithGemini } from './api/lib/gemini-server'
 
 
 function figmaAssetResolver() {

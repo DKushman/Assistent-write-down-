@@ -27,6 +27,25 @@ function normalizeAudioMimeType(blob: Blob): string {
   return "audio/webm";
 }
 
+async function parseApiResponse(res: Response): Promise<AnalyzedEntry & { error?: string }> {
+  const raw = await res.text();
+
+  if (!raw.trim()) {
+    throw new Error("Leere Server-Antwort. API-Route nicht erreichbar.");
+  }
+
+  try {
+    return JSON.parse(raw) as AnalyzedEntry & { error?: string };
+  } catch {
+    if (raw.trimStart().startsWith("<")) {
+      throw new Error(
+        "API nicht erreichbar. Bitte die Vercel-URL nutzen (nicht GitHub Pages) und GEMINI_API_KEY setzen.",
+      );
+    }
+    throw new Error("Ungültige Server-Antwort. Bitte später erneut versuchen.");
+  }
+}
+
 export async function analyzeAudio(audio: Blob): Promise<AnalyzedEntry> {
   if (audio.size < 500) {
     throw new Error(
@@ -34,16 +53,21 @@ export async function analyzeAudio(audio: Blob): Promise<AnalyzedEntry> {
     );
   }
 
-  const res = await fetch("/api/analyze", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      audioBase64: await blobToBase64(audio),
-      mimeType: normalizeAudioMimeType(audio),
-    }),
-  });
+  let res: Response;
+  try {
+    res = await fetch("/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        audioBase64: await blobToBase64(audio),
+        mimeType: normalizeAudioMimeType(audio),
+      }),
+    });
+  } catch {
+    throw new Error("Netzwerkfehler. Bitte Internetverbindung prüfen.");
+  }
 
-  const data = (await res.json()) as AnalyzedEntry & { error?: string };
+  const data = await parseApiResponse(res);
 
   if (!res.ok) {
     throw new Error(data.error ?? "Verarbeitung fehlgeschlagen.");
